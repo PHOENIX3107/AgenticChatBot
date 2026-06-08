@@ -17,7 +17,7 @@ class Config:
         return [item.strip() for item in val.split(",") if item.strip()]
 
     def get_use_case_options(self):
-        val = self.config.get("USE_CASES", "USECASE_OPTIONS", fallback="Basic Chatbot,Chatbot woth Tool,AI News,Blog Generator")
+        val = self.config.get("USE_CASES", "USECASE_OPTIONS", fallback="Basic Chatbot,Chatbot with Tool,AI News,Blog Generator")
         return [item.strip() for item in val.split(",") if item.strip()]
 
     def get_openai_model_options(self):

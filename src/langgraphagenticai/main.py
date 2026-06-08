@@ -53,7 +53,7 @@ def load_langgraph_agenticai_app():
             return 
         ## graph builder
 
-        graph_builder=GraphBuilder(model)
+        graph_builder=GraphBuilder(model, user_input.get("TAVILY_API_KEY"))
         try:
             graph=graph_builder.setup_graph(usecase)
             
@@ -61,9 +61,7 @@ def load_langgraph_agenticai_app():
         except Exception as e:
             st.error(f"Error:Graph setup failed- {str(e)}")
             return
-        
 
      except Exception as e:
         st.error(f"Error: {str(e)}")
         return
-               

@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 
 from langgraphagenticai.UI.uiconfigfile import Config
 
@@ -111,7 +110,14 @@ class LoadStreamlitUI:
                 )
 
             # Chatbot with Tool
-            elif self.user_controls["Selected_usecase"] == "Chatbot woth Tool":
+            elif self.user_controls["Selected_usecase"] in ("Chatbot with Tool", "Chatbot woth Tool"):
+
+                self.user_controls["TAVILY_API_KEY"] = st.session_state["TAVILY_API_KEY"] = st.text_input(
+                    "Enter Tavily API Key",
+                    type="password"
+                )
+                if not self.user_controls["TAVILY_API_KEY"]:
+                    st.warning("Please enter Tavily API Key")
 
                 self.user_controls["System_Prompt"] = st.text_area(
                     "System Prompt",
