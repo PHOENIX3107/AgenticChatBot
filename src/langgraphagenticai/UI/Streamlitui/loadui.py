@@ -131,10 +131,25 @@ class LoadStreamlitUI:
 
             # AI News
             elif self.user_controls["Selected_usecase"] == "AI News":
+                self.user_controls["TAVILY_API_KEY"] = st.session_state["TAVILY_API_KEY"] = st.text_input(
+                    "Enter Tavily API Key",
+                    type="password"
+                )
+                if not self.user_controls["TAVILY_API_KEY"]:
+                    st.warning("Please enter Tavily API Key")
+
+                st.subheader("AI News Explorer")
 
                 self.user_controls["News_Topic"] = st.text_input(
                     "News Topic",
-                    placeholder="Artificial Intelligence"
+                    value="Artificial Intelligence",
+                    placeholder="AI, robotics, OpenAI, Nvidia"
+                )
+
+                self.user_controls["Time_Frame"] = st.selectbox(
+                    "Select Time Frame",
+                    ["Daily", "Weekly", "Monthly"],
+                    index=0
                 )
 
                 self.user_controls["No_Of_Articles"] = st.slider(
@@ -143,6 +158,13 @@ class LoadStreamlitUI:
                     max_value=10,
                     value=5
                 )
+
+                self.user_controls["Fetch_News"] = st.button("Fetch Latest AI News", use_container_width=True)
+
+                if self.user_controls["Fetch_News"]:
+                    st.session_state["news_topic"] = self.user_controls["News_Topic"]
+                    st.session_state["timeframe"] = self.user_controls["Time_Frame"]
+
 
             # Blog Generator
             elif self.user_controls["Selected_usecase"] == "Blog Generator":

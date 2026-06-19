@@ -1,14 +1,14 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
-import json
 
 
 class DisplayResultStreamlit:
 
-    def __init__(self, usecase, graph, user_message):
+    def __init__(self, usecase, graph, user_message, user_controls=None):
         self.usecase = usecase
         self.graph = graph
         self.user_message = user_message
+        self.user_controls = user_controls or {}
 
     def display_result_on_ui(self):
 
@@ -54,3 +54,42 @@ class DisplayResultStreamlit:
                 elif type(message) == AIMessage and message.content:
                     with st.chat_message("assistant"):
                         st.write(message.content)
+
+        elif usecase == "AI News":
+            frequency = str(self.user_controls.get("Time_Frame", "")).strip().lower()
+            topic = str(
+                self.user_controls.get("News_Topic")
+                or st.session_state.get("news_topic")
+                or "Artificial Intelligence"
+            ).strip()
+            article_count = self.user_controls.get("No_Of_Articles", 5)
+
+            if not frequency:
+                st.error("Please select a time frame for AI News.")
+                return
+
+            with st.spinner("Fetching and summarizing news...⌛"):
+                result = graph.invoke(
+                    {
+                        "messages": [HumanMessage(content=frequency)],
+                        "topic": topic,
+                        "article_count": article_count,
+                    }
+                )
+
+                try:
+                    markdown_content = result.get("summary", "")
+
+                    if markdown_content:
+                        st.markdown(markdown_content, unsafe_allow_html=True)
+                        return
+
+                    ai_news_path = result.get("filename", f"./AINews/{frequency}_summary.md")
+                    with open(ai_news_path, "r", encoding="utf-8") as file:
+                        st.markdown(file.read(), unsafe_allow_html=True)
+
+                except FileNotFoundError:
+                    st.error(f"News Not Generated or File not found: {ai_news_path}")
+
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")

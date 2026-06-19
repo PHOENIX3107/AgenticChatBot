@@ -20,48 +20,66 @@ def load_langgraph_agenticai_app():
     if not user_input:
         st.error("Error: failed to load user input from the UI")
         return
-    user_message= st.chat_input("Type your message here")
-    
-    if user_message:
-     try:
 
-        selected_llm = user_input.get("Selected_llm")
+    selected_usecase = user_input.get("Selected_usecase")
+    user_message = st.chat_input("Type your message here") if selected_usecase != "AI News" else None
 
-        if selected_llm == "Groq":
-            obj_llm_config = GroqLLM(
-                user_controls_input=user_input
-            )
+    run_requested = (
+        (
+            selected_usecase == "AI News"
+            and (bool(user_input.get("Run")) or bool(user_input.get("Fetch_News")))
+        )
+        or (selected_usecase != "AI News" and bool(user_message))
+    )
 
-        elif selected_llm == "OpenAI":
-            obj_llm_config = OpenAI_LLM(
-                user_controls_input=user_input
-            )
-
-        else:
-            st.error(f"Unsupported LLM: {selected_llm}")
-            return
-
-        model = obj_llm_config.get_llm_model()
-
-        if not model:
-            st.error("Failed to initialize model")
-            return
-
-        usecase=user_input.get("Selected_usecase")
-        if not usecase:
-            st.error("Failed to load Use Case")
-            return 
-        ## graph builder
-
-        graph_builder=GraphBuilder(model, user_input.get("TAVILY_API_KEY"))
+    if run_requested:
         try:
-            graph=graph_builder.setup_graph(usecase)
-            
-            DisplayResultStreamlit(usecase,graph,user_message).display_result_on_ui()
-        except Exception as e:
-            st.error(f"Error:Graph setup failed- {str(e)}")
-            return
+            selected_llm = user_input.get("Selected_llm")
 
-     except Exception as e:
-        st.error(f"Error: {str(e)}")
-        return
+            if selected_llm == "Groq":
+                obj_llm_config = GroqLLM(
+                    user_controls_input=user_input
+                )
+
+            elif selected_llm == "OpenAI":
+                obj_llm_config = OpenAI_LLM(
+                    user_controls_input=user_input
+                )
+
+            else:
+                st.error(f"Unsupported LLM: {selected_llm}")
+                return
+
+            model = obj_llm_config.get_llm_model()
+
+            if not model:
+                st.error("Failed to initialize model")
+                return
+
+            usecase = selected_usecase
+            if not usecase:
+                st.error("Failed to load Use Case")
+                return
+
+            # Build the graph for the selected use case.
+            graph_builder = GraphBuilder(model, user_input.get("TAVILY_API_KEY"))
+            try:
+                graph = graph_builder.setup_graph(usecase)
+            except Exception as e:
+                st.error(f"Error: Graph setup failed - {str(e)}")
+                return
+
+            try:
+                DisplayResultStreamlit(
+                    usecase,
+                    graph,
+                    user_message,
+                    user_input,
+                ).display_result_on_ui()
+            except Exception as e:
+                st.error(f"Error: Execution failed - {str(e)}")
+                return
+
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+            return
