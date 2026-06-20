@@ -10,5 +10,15 @@ wheels/
 .venv
 .env
 .langgraph_api/
-__pycache__/
+
 .venv/
+.env
+
+
+*.pyc
+
+request.json
+
+
+
+

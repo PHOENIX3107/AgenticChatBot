@@ -189,6 +189,11 @@ class LoadStreamlitUI:
                     ]
                 )
 
+                self.user_controls["Language"] = st.selectbox(
+                    "Output Language",
+                    ["English", "Hindi", "French"]
+                )
+
             st.divider()
 
             self.user_controls["Run"] = st.button(

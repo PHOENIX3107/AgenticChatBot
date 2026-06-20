@@ -6,7 +6,8 @@ from langgraph.prebuilt import tools_condition
 from langgraphagenticai.nodes.chatbot_with_tool_node import ChatbotWithToolNode
 import os
 from langgraphagenticai.nodes.ai_news_node import AiNewsNode
-
+from  langgraphagenticai.state.blogstate import BlogState
+from langgraphagenticai.nodes.blog_node import BlogNode
 
 CHATBOT_WITH_TOOL_USECASES = {"Chatbot with Tool", "Chatbot woth Tool"}
 
@@ -21,6 +22,32 @@ class GraphBuilder:
 
     def _reset_graph_builder(self):
         self.graph_builder = StateGraph(State)
+
+    def setup_graph(self, usecase):
+        """
+        Build and compile the graph for the requested use case.
+        """
+        usecase = (usecase or "").strip()
+
+        if usecase == "Basic Chatbot":
+            self._reset_graph_builder()
+            self.basic_chatbot_build_graph()
+            return self.graph_builder.compile()
+
+        if usecase in CHATBOT_WITH_TOOL_USECASES:
+            self._reset_graph_builder()
+            self.chatbot_with_tool_build_graph()
+            return self.graph_builder.compile()
+
+        if usecase == "AI News":
+            self._reset_graph_builder()
+            self.ai_news_build_graph()
+            return self.graph_builder.compile()
+
+        if usecase == "Blog Generator":
+            return self.blog_generator_build_graph().compile()
+
+        raise ValueError(f"Unsupported use case: {usecase}")
     
     def basic_chatbot_build_graph(self):
         """
@@ -71,16 +98,68 @@ class GraphBuilder:
         self.graph_builder.add_edge("summarize_news", "save_result")
         self.graph_builder.add_edge("save_result", END)
 
-    def setup_graph(self, usecase: str):
-        self._reset_graph_builder()
 
-        if usecase == "Basic Chatbot":
-            self.basic_chatbot_build_graph()
-        elif usecase in CHATBOT_WITH_TOOL_USECASES:
-            self.chatbot_with_tool_build_graph()
-        elif usecase == "AI News":
-            self.ai_news_build_graph()
-        else:
-            raise ValueError(f"Unsupported use case: {usecase}")
+    ### BLOG
+    def blog_generator_build_graph(self):
+        """
+        Builds a graph to generate blogs based on the topic.
+        """
+        self.graph_builder = StateGraph(BlogState)
+        self.blog_node_obj = BlogNode(self.llm)
+        self.graph_builder.add_node(
+            "title_creation",
+            self.blog_node_obj.title_creation
+        )
+        self.graph_builder.add_node(
+            "content_creation",
+            self.blog_node_obj.content_genration
+        )
+        self.graph_builder.add_node(
+            "hindi_translation",
+            self.blog_node_obj.hindi_translation
+        )
+        self.graph_builder.add_node(
+            "french_translation",
+            self.blog_node_obj.french_translation
+        )
+        self.graph_builder.add_node(
+            "route",
+            self.blog_node_obj.route
+        )
 
-        return self.graph_builder.compile()
+        self.graph_builder.add_edge(
+            START,
+            "title_creation"
+        )
+        self.graph_builder.add_edge(
+            "title_creation",
+            "content_creation"
+        )
+        self.graph_builder.add_edge(
+            "content_creation",
+            "route"
+        )
+        self.graph_builder.add_conditional_edges(
+            "route",
+            self.blog_node_obj.route_decision,
+            {
+                "Hindi": "hindi_translation",
+                "French": "french_translation",
+                "English": END
+            }
+        )
+        self.graph_builder.add_edge(
+            "hindi_translation",
+            END
+        )
+        self.graph_builder.add_edge(
+            "french_translation",
+            END
+        )
+        return self.graph_builder
+
+    
+
+
+
+

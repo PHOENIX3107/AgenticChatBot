@@ -1,11 +1,13 @@
 import os
 import streamlit as st
 from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
 
 
 class OpenAI_LLM:
     def __init__(self, user_controls_input):
         self.user_controls_input = user_controls_input
+
 
     def get_llm_model(self):
         try:

@@ -1,0 +1,10 @@
+{
+  
+  "graphs": {
+    "blog_generator": "./studio_graph.py:graph"
+  },
+  "source": {
+    "kind": "uv",
+    "root": "."
+  }
+}

@@ -1,3 +1,4 @@
+
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
@@ -90,6 +91,51 @@ class DisplayResultStreamlit:
 
                 except FileNotFoundError:
                     st.error(f"News Not Generated or File not found: {ai_news_path}")
+
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+        elif usecase == "Blog Generator":
+
+            topic = self.user_controls.get("Blog_Topic", "")
+            tone = self.user_controls.get("Blog_Tone", "Professional")
+            length = self.user_controls.get("Blog_Length", "Medium")
+            language = self.user_controls.get("Language", "English")
+
+            if not topic:
+                st.error("Please enter a blog topic.")
+                return
+
+            with st.spinner("Generating blog...✍️"):
+
+                result = graph.invoke(
+                    {
+                        "topic": topic,
+                        "language": language,
+                        "current_language": language
+                    }
+                )
+
+                try:
+                    blog = result.get("blog")
+
+                    if not blog:
+                        st.error("Blog generation failed.")
+                        return
+
+                    if isinstance(blog, dict):
+                        title = blog.get("title", "")
+                        content = blog.get("content", "")
+                    else:
+                        title = getattr(blog, "title", "")
+                        content = getattr(blog, "content", "")
+
+                    st.markdown(f"# {title}")
+
+                    st.caption(f"Language: {language}")
+
+                    st.divider()
+
+                    st.markdown(content)
 
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")

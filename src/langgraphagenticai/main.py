@@ -22,14 +22,16 @@ def load_langgraph_agenticai_app():
         return
 
     selected_usecase = user_input.get("Selected_usecase")
-    user_message = st.chat_input("Type your message here") if selected_usecase != "AI News" else None
+    chat_usecases = {"Basic Chatbot", "Chatbot with Tool", "Chatbot woth Tool"}
+    user_message = st.chat_input("Type your message here") if selected_usecase in chat_usecases else None
 
     run_requested = (
         (
             selected_usecase == "AI News"
             and (bool(user_input.get("Run")) or bool(user_input.get("Fetch_News")))
         )
-        or (selected_usecase != "AI News" and bool(user_message))
+        or (selected_usecase == "Blog Generator" and bool(user_input.get("Run")))
+        or (selected_usecase in chat_usecases and bool(user_message))
     )
 
     if run_requested:
